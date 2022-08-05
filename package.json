@@ -1,6 +1,6 @@
 {
-    "name": "lookpath",
-    "version": "1.2.2",
+    "name": "find-bin",
+    "version": "1.0.1",
     "description": "The minimum and most straightforward way to check if command exists and where the executable is.",
     "engines": {
         "npm": ">=6.13.4"
@@ -22,7 +22,7 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/otiai10/lookpath.git"
+        "url": "git+https://github.com/jonluca/lookpath.git"
     },
     "keywords": [
         "exec.LookPath",
@@ -30,9 +30,9 @@
         "exists"
     ],
     "bugs": {
-        "url": "https://github.com/otiai10/lookpath/issues"
+        "url": "https://github.com/jonluca/lookpath/issues"
     },
-    "homepage": "https://github.com/otiai10/lookpath#readme",
+    "homepage": "https://github.com/jonluca/lookpath#readme",
     "devDependencies": {
         "@types/node": "^18.6.4",
         "@typescript-eslint/eslint-plugin": "^5.32.0",
