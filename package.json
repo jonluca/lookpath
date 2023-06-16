@@ -1,6 +1,6 @@
 {
     "name": "find-bin",
-    "version": "1.0.2",
+    "version": "0.0.0-development",
     "description": "The minimum and most straightforward way to check if command exists and where the executable is.",
     "main": "./lib/index.js",
     "bin": {
