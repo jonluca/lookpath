@@ -18,7 +18,7 @@ yarn add find-bin
 # Example usage
 
 ```js
-const { lookpath, lookpathSync } = require('lookpath');
+const { lookpath, lookpathSync } = require('find-bin');
 
 const p = await lookpath('bash');
 const pSync = lookpathSync('bash');
