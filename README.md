@@ -1,18 +1,18 @@
-# lookpath
+# find-bin
 
-[![npm version](https://badge.fury.io/js/lookpath.svg)](https://badge.fury.io/js/lookpath)
-[![npm download](https://img.shields.io/npm/dt/lookpath.svg)](https://www.npmjs.com/package/lookpath)
-[![Node.js CI](https://github.com/otiai10/lookpath/workflows/Node.js%20CI/badge.svg)](https://github.com/otiai10/lookpath/actions/)
-[![CodeQL](https://github.com/otiai10/lookpath/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/otiai10/lookpath/actions/workflows/codeql-analysis.yml)
-[![codecov](https://codecov.io/gh/otiai10/lookpath/branch/master/graph/badge.svg)](https://codecov.io/gh/otiai10/lookpath)
-[![Maintainability](https://api.codeclimate.com/v1/badges/1cc9237695a7bd8e3d60/maintainability)](https://codeclimate.com/github/otiai10/lookpath/maintainability)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fotiai10%2Flookpath.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fotiai10%2Flookpath?ref=badge_shield)
+[![npm version](https://badge.fury.io/js/find-bin.svg)](https://badge.fury.io/js/find-bin)
+[![npm download](https://img.shields.io/npm/dt/find-bin.svg)](https://www.npmjs.com/package/find-bin)
+[![Node.js CI](https://github.com/otiai10/find-bin/workflows/Node.js%20CI/badge.svg)](https://github.com/otiai10/find-bin/actions/)
+[![CodeQL](https://github.com/otiai10/find-bin/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/otiai10/find-bin/actions/workflows/codeql-analysis.yml)
+[![codecov](https://codecov.io/gh/otiai10/find-bin/branch/master/graph/badge.svg)](https://codecov.io/gh/otiai10/find-bin)
+[![Maintainability](https://api.codeclimate.com/v1/badges/1cc9237695a7bd8e3d60/maintainability)](https://codeclimate.com/github/otiai10/find-bin/maintainability)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fotiai10%2Ffind-bin.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fotiai10%2Ffind-bin?ref=badge_shield)
 
 To check if the command exists and where the executable file is, **WITHOUT** using `child_process`.
 
 ```
-npm install lookpath
-yarn add lookpath
+npm install find-bin
+yarn add find-bin
 ```
 
 # Example usage
@@ -61,12 +61,3 @@ const p = await lookpath('bash', {
     -   [src/os/exec/lp_unix.go - The Go Programming Language](https://golang.org/src/os/exec/lp_unix.go?s=928:970#L24)
 -   so I concluded that scanning under `$PATH` or `$Path` is the best straightforward way to check if the command exists.
 
-# Issues
-
--   https://github.com/otiai10/lookpath/issues
-
-Any feedback would be appreciated ;)
-
-# License
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fotiai10%2Flookpath.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fotiai10%2Flookpath?ref=badge_large)

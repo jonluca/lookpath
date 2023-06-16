@@ -2,7 +2,7 @@
     "exclude": ["./lib", "./tests", "./node_modules", "vite.config.ts"],
     "compilerOptions": {
         /* Basic Options */
-        "target": "ES2020",
+        "target": "ESNext",
         "module": "commonjs" /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */,
         // "lib": [],                             /* Specify library files to be included in the compilation. */
         // "allowJs": true,                       /* Allow javascript files to be compiled. */

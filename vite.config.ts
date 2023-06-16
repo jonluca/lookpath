@@ -7,7 +7,4 @@ export default defineConfig({
         threads: false,
         reporters: 'verbose',
     },
-    esbuild: {
-        target: 'es2020',
-    },
 });
