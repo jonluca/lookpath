@@ -1,8 +1,11 @@
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import { COMMON_PATHS } from './common';
 
 type MaybeString = string | undefined;
+
+const compact = (paths: MaybeString[]): string[] => paths.filter((candidate): candidate is string => !!candidate);
 
 const isWindows = /^win/i.test(process.platform);
 
@@ -42,17 +45,17 @@ const accessSync = (fpath: string): MaybeString => {
  * @param {LookPathOption} opt Options for lookpath.
  * @return {Promise<string>} Resolves the absolute file path just checked, or undefined.
  */
-const isExecutable = async (abspath: string, opt: LookPathOption = {}): Promise<MaybeString | MaybeString[]> => {
+const isExecutable = async (abspath: string, opt: LookPathOption = {}): Promise<MaybeString | string[]> => {
     const envvars = opt.env || { ...process.env }; // make a copy of process.env
     const exts = (envvars.PATHEXT || '').split(path.delimiter).concat('');
     const bins = await Promise.all(exts.map((ext) => access(abspath + ext)));
-    return opt.findAll ? Array.from(new Set(bins.filter(Boolean).flat())) : bins.find((bin) => !!bin);
+    return opt.findAll ? Array.from(new Set(compact(bins))) : bins.find((bin) => !!bin);
 };
-const isExecutableSync = (abspath: string, opt: LookPathOption = {}): MaybeString | MaybeString[] => {
+const isExecutableSync = (abspath: string, opt: LookPathOption = {}): MaybeString | string[] => {
     const envvars = opt.env || { ...process.env }; // make a copy of process.env
     const exts = (envvars.PATHEXT || '').split(path.delimiter).concat('');
     const bins = exts.map((ext) => accessSync(abspath + ext));
-    return opt.findAll ? Array.from(new Set(bins.filter(Boolean).flat())) : bins.find((bin) => !!bin);
+    return opt.findAll ? Array.from(new Set(compact(bins))) : bins.find((bin) => !!bin);
 };
 
 /**
@@ -65,11 +68,18 @@ const isExecutableSync = (abspath: string, opt: LookPathOption = {}): MaybeStrin
 const getDirsToWalkThrough = (opt: LookPathOption): string[] => {
     const envvars = opt.env || { ...process.env }; // make a copy of process.env
     const envname = isWindows ? 'Path' : 'PATH';
+    const home = envvars.HOME || envvars.USERPROFILE || os.homedir();
+    const expandHome = (dir: string): string => {
+        if (dir === '~') return home;
+        return /^~[\\/]/.test(dir) ? path.join(home, dir.slice(2)) : dir;
+    };
+    const excluded = (opt.exclude || []).map(expandHome);
     return (envvars[envname] || '')
         .split(path.delimiter)
         .concat(opt.include || [])
         .concat(opt.includeCommonPaths ? COMMON_PATHS : [])
-        .filter((p) => !(opt.exclude || []).includes(p));
+        .map(expandHome)
+        .filter((dir) => !excluded.includes(dir));
 };
 
 /**
@@ -77,19 +87,23 @@ const getDirsToWalkThrough = (opt: LookPathOption): string[] => {
  * and resolves with undefined if the command not found.
  * @param {string} command Command name to look for.
  * @param {LookPathOption} opt Options for lookpath.
- * @return {Promise<string|undefined | (string|undefined)[]>} Resolves absolute file path, or undefined if not found.
+ * @return {Promise<string|string[]|undefined>} Resolves one or all absolute file paths, or undefined if not found.
  */
 // Stronger typed functions so that it can infer if it's returning an array with opt.findAll or not
 export function lookpath(command: string): Promise<MaybeString>;
-export function lookpath(command: string, opt: LookOptionsFindAll): Promise<MaybeString[]>;
-export function lookpath(command: string, opt: BaseLookPathOption | LookOptionsNoFindAll): Promise<MaybeString>;
-export async function lookpath(command: string, opt: LookPathOption = {}): Promise<MaybeString | MaybeString[]> {
+export function lookpath(command: string, opt: LookOptionsFindAll): Promise<string[]>;
+export function lookpath(command: string, opt: LookOptionsNoFindAll): Promise<MaybeString>;
+export function lookpath(command: string, opt: LookPathOption): Promise<MaybeString | string[]>;
+export async function lookpath(command: string, opt: LookPathOption = {}): Promise<MaybeString | string[]> {
     const directpath = isFilepath(command);
     if (directpath) return isExecutable(directpath, opt);
 
     const dirs = getDirsToWalkThrough(opt);
     const bins = await Promise.all(dirs.map((dir) => isExecutable(path.join(dir, command), opt)));
-    return opt.findAll ? Array.from(new Set(bins.filter(Boolean).flat())) : bins.find((bin) => !!bin);
+    const flattened = bins.flat();
+    return opt.findAll
+        ? Array.from(new Set(compact(flattened)))
+        : flattened.find((bin): bin is string => typeof bin === 'string');
 }
 
 /**
@@ -97,18 +111,22 @@ export async function lookpath(command: string, opt: LookPathOption = {}): Promi
  * and returns undefined if the command not found.
  * @param {string} command Command name to look for.
  * @param {LookPathOption} opt Options for lookpath.
- * @return {string|undefined | (string|undefined)[]} Resolves absolute file path, or undefined if not found.
+ * @return {string|string[]|undefined} Resolves one or all absolute file paths, or undefined if not found.
  */
 export function lookpathSync(command: string): MaybeString;
-export function lookpathSync(command: string, opt: LookOptionsFindAll): MaybeString[];
-export function lookpathSync(command: string, opt: BaseLookPathOption | LookOptionsNoFindAll): MaybeString;
-export function lookpathSync(command: string, opt: LookPathOption = {}): MaybeString | MaybeString[] {
+export function lookpathSync(command: string, opt: LookOptionsFindAll): string[];
+export function lookpathSync(command: string, opt: LookOptionsNoFindAll): MaybeString;
+export function lookpathSync(command: string, opt: LookPathOption): MaybeString | string[];
+export function lookpathSync(command: string, opt: LookPathOption = {}): MaybeString | string[] {
     const directpath = isFilepath(command);
     if (directpath) return isExecutableSync(directpath, opt);
 
     const dirs = getDirsToWalkThrough(opt);
     const bins = dirs.map((dir) => isExecutableSync(path.join(dir, command), opt));
-    return opt.findAll ? Array.from(new Set(bins.filter(Boolean).flat())) : bins.find((bin) => !!bin);
+    const flattened = bins.flat();
+    return opt.findAll
+        ? Array.from(new Set(compact(flattened)))
+        : flattened.find((bin): bin is string => typeof bin === 'string');
 }
 /**
  * Options for lookpath.
@@ -124,10 +142,6 @@ interface BaseLookPathOption {
      * Those common paths are enumerated in `src/common.ts`
      */
     includeCommonPaths?: boolean;
-    /**
-     * Returns an array of all binaries matching that name in the PATH.
-     */
-    findAll?: boolean;
     /**
      * Pathes to exclude to look for.
      * Example: ['/mnt']

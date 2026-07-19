@@ -1,7 +1,8 @@
-import { lookpath as lookpathAsync, lookpathSync } from '../src/index';
+import { lookpath as lookpathAsync, type LookPathOption, lookpathSync } from '../src/index';
 import * as path from 'path';
+import * as os from 'os';
 import { promises as fs } from 'fs';
-import { describe, it, beforeAll, expect } from 'vitest';
+import { describe, it, beforeAll, expect, expectTypeOf } from 'vitest';
 
 describe('lookpath', () => {
     const isWindows = /^win/i.test(process.platform);
@@ -95,7 +96,7 @@ describe('lookpath', () => {
                     path.join(__dirname, 'data', 'bin_2'),
                 ].join(path.delimiter),
             };
-            let result: string = await lookpath('node', { env });
+            let result: string | undefined = await lookpath('node', { env });
             expect(result).toBeUndefined();
             result = await lookpath('node');
             expect(result).not.toBeUndefined();
@@ -114,5 +115,37 @@ describe('lookpath', () => {
             });
             expect(withAdditionalPath).not.toBeUndefined();
         });
+
+        it('should expand home-relative common paths', async () => {
+            const home = await fs.mkdtemp(path.join(os.tmpdir(), 'lookpath-home-'));
+            const bin = path.join(home, '.local', 'bin');
+            const command = 'lookpath_home_test';
+            const executable = path.join(bin, command);
+            await fs.mkdir(bin, { recursive: true });
+            await fs.writeFile(executable, '#!/bin/sh\n');
+            await fs.chmod(executable, 0o755);
+
+            try {
+                const result = await lookpath(command, {
+                    includeCommonPaths: true,
+                    env: { PATH: '', Path: '', HOME: home },
+                });
+                expect(result).toBe(executable);
+                expect(
+                    lookpathSync(command, {
+                        includeCommonPaths: true,
+                        env: { PATH: '', Path: '', HOME: home },
+                    })
+                ).toBe(executable);
+            } finally {
+                await fs.rm(home, { recursive: true, force: true });
+            }
+        });
     }
+
+    it('preserves the findAll result union for typed option variables', () => {
+        const options = {} as LookPathOption;
+        expectTypeOf(lookpathAsync('node', options)).toEqualTypeOf<Promise<string | string[] | undefined>>();
+        expectTypeOf(lookpathSync('node', options)).toEqualTypeOf<string | string[] | undefined>();
+    });
 });
